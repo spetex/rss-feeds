@@ -11,6 +11,7 @@ group :development do
   #  gem 'guard-rspec'
   #  gem 'rspec'
   #  gem 'rspec-collection_matchers'
+  gem 'rerun'
   gem 'rubocop'
   #  gem 'simplecov'
 end
