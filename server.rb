@@ -39,6 +39,13 @@ class RssProviderApp < Roda
   ]
 
   route do |r|
+    r.on 'goout.rss' do
+      response['Content-Type'] = 'application/xml'
+      file = File.read "#{DATA_DIR}/events_goout_newly_announced.json"
+      events = JSON.parse file
+      rss = produce_rss events
+      rss.to_s
+    end
     r.on 'goout', String do |category|
       response['Content-Type'] = 'application/xml'
       file = File.read "#{DATA_DIR}/#{category}_goout_newly_announced.json"
