@@ -13,44 +13,31 @@ def create_event(event, maker)
   end
 end
 
-def produce_rss(events)
+def produce_rss(events, category)
   RSS::Maker.make('atom') do |maker|
     maker.channel.author = 'GoOut'
     maker.channel.updated = Time.now.to_s
-    maker.channel.about = 'List of just announced events in Prague'
-    maker.channel.title = 'GoOut.cz Praha Newly Announced'
+    maker.channel.about = "List of just announced #{category} in Prague"
+    maker.channel.title = "#{category.capitalize} - GoOut.cz Praha Newly Announced"
 
     events.each { |event| create_event(event, maker) }
   end
 end
 
 class RssProviderApp < Roda
-  categories = %w[
-    events
-    concerts
-    plays
-    exhibitions
-    movies
-    parties
-    festivals
-    culinary
-    for-children
-    other-events
-  ]
-
   route do |r|
     r.on 'goout.rss' do
       response['Content-Type'] = 'application/xml'
       file = File.read "#{DATA_DIR}/events_goout_newly_announced.json"
       events = JSON.parse file
-      rss = produce_rss events
+      rss = produce_rss events 'Master'
       rss.to_s
     end
     r.on 'goout', String do |category|
       response['Content-Type'] = 'application/xml'
       file = File.read "#{DATA_DIR}/#{category}_goout_newly_announced.json"
       events = JSON.parse file
-      rss = produce_rss events
+      rss = produce_rss events, category
       rss.to_s
     end
     r.on do
