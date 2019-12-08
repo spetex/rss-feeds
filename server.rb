@@ -25,10 +25,23 @@ def produce_rss(events)
 end
 
 class RssProviderApp < Roda
+  categories = %w[
+    events
+    concerts
+    plays
+    exhibitions
+    movies
+    parties
+    festivals
+    culinary
+    for-children
+    other-events
+  ]
+
   route do |r|
-    r.on 'goout.rss' do
+    r.on 'goout', String do |category|
       response['Content-Type'] = 'application/xml'
-      file = File.read "#{DATA_DIR}/goout_newly_announced.json"
+      file = File.read "#{DATA_DIR}/#{category}_goout_newly_announced.json"
       events = JSON.parse file
       rss = produce_rss events
       rss.to_s
