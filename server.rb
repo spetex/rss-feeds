@@ -13,7 +13,7 @@ def create_event(event, maker)
   end
 end
 
-def produce_rss(events, category)
+def produce_goout_rss(events, category)
   RSS::Maker.make('atom') do |maker|
     maker.channel.author = 'GoOut'
     maker.channel.updated = Time.now.to_s
@@ -21,6 +21,25 @@ def produce_rss(events, category)
     maker.channel.title = "#{category.capitalize} - GoOut.cz Praha Newly Announced"
 
     events.each { |event| create_event(event, maker) }
+  end
+end
+
+def create_post(post, maker)
+  maker.items.new_item do |item|
+    item.link = post['link']
+    item.title = post['name']
+    item.updated = post['scrapeDate']
+  end
+end
+
+def produce_puttyandpaint_rss(posts, category)
+  RSS::Maker.make('atom') do |maker|
+    maker.channel.author = 'PuttyAndPaint.com'
+    maker.channel.updated = Time.now.to_s
+    maker.channel.about = "List of #{category} on PuttyAndPaint"
+    maker.channel.title = "#{category.capitalize} - PuttyAndPaint.com"
+
+    posts.each { |post| create_event(post, maker) }
   end
 end
 
@@ -33,13 +52,23 @@ class RssProviderApp < Roda
       rss = produce_rss events 'Master'
       rss.to_s
     end
+
     r.on 'goout', String do |category|
       response['Content-Type'] = 'application/xml'
       file = File.read "#{DATA_DIR}/#{category}_goout_newly_announced.json"
       events = JSON.parse file
-      rss = produce_rss events, category
+      rss = produce_goout_rss events, category
       rss.to_s
     end
+
+    r.on 'puttyandpaint', String do |category|
+      response['Content-Type'] = 'application/xml'
+      file = File.read "#{DATA_DIR}/#{category}_puttyandpaint.json"
+      posts = JSON.parse file
+      rss = produce_puttyandpaint_rss posts, category
+      rss.to_s
+    end
+
     r.on do
       '404: Not found'
     end
