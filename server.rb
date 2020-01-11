@@ -43,6 +43,17 @@ def produce_puttyandpaint_rss(posts, category)
   end
 end
 
+def produce_coolminiornot_rss(posts)
+  RSS::Maker.make('atom') do |maker|
+    maker.channel.author = 'CoolMiniOrNot.com'
+    maker.channel.updated = Time.now.to_s
+    maker.channel.about = "Gallery on CoolMiniOrNot"
+    maker.channel.title = "Gallery - CoolMiniOrNot.com"
+
+    posts.each { |post| create_event(post, maker) }
+  end
+end
+
 def produce_whcommunity_rss(posts, category)
   RSS::Maker.make('atom') do |maker|
     maker.channel.author = 'Warhammer Community'
@@ -85,6 +96,14 @@ class RssProviderApp < Roda
       file = File.read "#{DATA_DIR}/#{category}_whcommunity.json"
       posts = JSON.parse file
       rss = produce_whcommunity_rss posts, category
+      rss.to_s
+    end
+
+    r.on 'coolminiornot' do
+      response['Content-Type'] = 'application/xml'
+      file = File.read "#{DATA_DIR}/coolminiornot.json"
+      posts = JSON.parse file
+      rss = produce_coolminiornot_rss posts
       rss.to_s
     end
 
