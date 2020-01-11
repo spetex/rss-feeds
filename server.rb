@@ -43,6 +43,17 @@ def produce_puttyandpaint_rss(posts, category)
   end
 end
 
+def produce_whcommunity_rss(posts, category)
+  RSS::Maker.make('atom') do |maker|
+    maker.channel.author = 'Warhammer Community'
+    maker.channel.updated = Time.now.to_s
+    maker.channel.about = "List of #{category} on Warhammer Community"
+    maker.channel.title = "#{category.capitalize} - WarhammerCommunity"
+
+    posts.each { |post| create_event(post, maker) }
+  end
+end
+
 class RssProviderApp < Roda
   route do |r|
     r.on 'goout.rss' do
@@ -66,6 +77,14 @@ class RssProviderApp < Roda
       file = File.read "#{DATA_DIR}/#{category}_puttyandpaint.json"
       posts = JSON.parse file
       rss = produce_puttyandpaint_rss posts, category
+      rss.to_s
+    end
+
+    r.on 'whcommunity', String do |category|
+      response['Content-Type'] = 'application/xml'
+      file = File.read "#{DATA_DIR}/#{category}_whcommunity.json"
+      posts = JSON.parse file
+      rss = produce_whcommunity_rss posts, category
       rss.to_s
     end
 
